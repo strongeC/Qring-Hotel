@@ -1,0 +1,5 @@
+{
+  "name": "ResortFlow",
+  "description": "Premium resort management system with Guest and Bar interfaces.",
+  "requestFramePermissions": ["geolocation"]
+}
