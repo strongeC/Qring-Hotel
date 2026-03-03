@@ -18,7 +18,6 @@ import OrderHistory from './pages/guest/OrderHistory';
 import BarLogin from './pages/bar/BarLogin';
 import BarDashboard from './pages/bar/BarDashboard';
 import BarOrders from './pages/bar/BarOrders';
-import BarBatchView from './pages/bar/BarBatchView';
 import BarRequests from './pages/bar/BarRequests';
 
 export default function App() {
@@ -43,7 +42,6 @@ export default function App() {
             <Route path="dashboard" element={<BarDashboard />} />
             <Route path="orders" element={<BarOrders />} />
             <Route path="requests" element={<BarRequests />} />
-            <Route path="batch" element={<BarBatchView />} />
             <Route index element={<Navigate to="/b/login" replace />} />
           </Route>
 

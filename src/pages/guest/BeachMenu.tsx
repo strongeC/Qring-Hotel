@@ -64,7 +64,7 @@ export default function BeachMenu() {
   if (isLoading || !menu) return <div className="p-8 text-center text-stone-400">{t('loading')}</div>;
 
   return (
-    <div className="pb-24 relative min-h-screen">
+    <div className="pb-32 relative min-h-screen">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-stone-100 px-4 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
@@ -139,71 +139,89 @@ export default function BeachMenu() {
       <div className="p-4 space-y-4">
         {menu.products
           .filter(p => p.categoryId === activeCategory)
-          .map((product) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex gap-4 p-3 rounded-2xl bg-white border border-stone-100 shadow-sm"
-            >
-              <div className="flex-shrink-0">
-                {product.image ? (
-                  <img 
-                    src={product.image} 
-                    alt={product.name[language]} 
-                    className="w-24 h-24 object-cover rounded-xl bg-stone-100"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.src = `https://placehold.co/300x300/f5f5f4/a8a29e?text=${encodeURIComponent(product.name[language].charAt(0))}`;
-                    }}
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-xl bg-stone-100 flex items-center justify-center text-stone-300">
-                    <ShoppingBag className="w-8 h-8" />
-                  </div>
+          .map((product) => {
+            const cartItem = items.find(i => i.productId === product.id);
+            return (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => isInsideGeofence && handleAddItem(product.id)}
+                className={cn(
+                  "flex gap-4 p-3 rounded-2xl bg-white border transition-all active:scale-[0.98] cursor-pointer",
+                  cartItem ? "border-emerald-200 shadow-md bg-emerald-50/30" : "border-stone-100 shadow-sm hover:border-stone-200",
+                  !isInsideGeofence && "opacity-60 grayscale cursor-not-allowed"
                 )}
-              </div>
-              <div className="flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-medium text-stone-900">{product.name[language]}</h3>
-                  <p className="text-xs text-stone-500 mt-1 line-clamp-2">
-                    Refreshing and cold.
-                  </p>
-                </div>
-                
-                <div className="flex justify-end mt-2">
-                  {items.find(i => i.productId === product.id) ? (
-                    <div className="flex items-center gap-3 bg-stone-100 rounded-full px-2 py-1">
-                      <button 
-                        onClick={() => updateQuantity(product.id, -1)}
-                        className="p-1 hover:bg-white rounded-full transition-colors"
-                      >
-                        <Minus className="w-4 h-4 text-stone-600" />
-                      </button>
-                      <span className="text-sm font-medium w-4 text-center">
-                        {items.find(i => i.productId === product.id)?.quantity}
-                      </span>
-                      <button 
-                        onClick={() => handleAddItem(product.id)}
-                        className="p-1 hover:bg-white rounded-full transition-colors"
-                      >
-                        <Plus className="w-4 h-4 text-stone-600" />
-                      </button>
-                    </div>
+              >
+                <div className="flex-shrink-0 relative">
+                  {product.image ? (
+                    <img 
+                      src={product.image} 
+                      alt={product.name[language]} 
+                      className="w-24 h-24 object-cover rounded-xl bg-stone-100"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.src = `https://placehold.co/300x300/f5f5f4/a8a29e?text=${encodeURIComponent(product.name[language].charAt(0))}`;
+                      }}
+                    />
                   ) : (
-                    <button 
-                      onClick={() => handleAddItem(product.id)}
-                      disabled={!isInsideGeofence}
-                      className="flex items-center gap-2 px-4 py-2 bg-stone-900 text-white text-xs font-medium rounded-full hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {t('beach.add')}
-                    </button>
+                    <div className="w-24 h-24 rounded-xl bg-stone-100 flex items-center justify-center text-stone-300">
+                      <ShoppingBag className="w-8 h-8" />
+                    </div>
+                  )}
+                  {cartItem && (
+                    <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                      {cartItem.quantity}
+                    </div>
                   )}
                 </div>
-              </div>
-            </motion.div>
-          ))}
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-medium text-stone-900">{product.name[language]}</h3>
+                    <p className="text-xs text-stone-500 mt-1 line-clamp-2">
+                      Refreshing and cold.
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-xs font-bold text-stone-400 uppercase tracking-tighter">Tap to add</span>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
       </div>
+
+      {/* Floating Cart Summary (when drawer is closed) */}
+      <AnimatePresence>
+        {cartTotalItems > 0 && !isCartOpen && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-4 right-4 z-30"
+          >
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="w-full bg-stone-900 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-lg">
+                  <ShoppingBag className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <p className="text-xs text-white/60 font-medium uppercase tracking-wider">{t('beach.cart.title')}</p>
+                  <p className="font-medium">{cartTotalItems} {t('beach.items')}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 font-bold">
+                View Cart
+                <ChevronRight className="w-4 h-4" />
+              </div>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Cart Drawer */}
       <AnimatePresence>

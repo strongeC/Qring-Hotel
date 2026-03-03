@@ -74,7 +74,6 @@ export default function BarLayout() {
           <NavItem to="/b/dashboard" icon={LayoutDashboard} label="Dashboard" />
           <NavItem to="/b/orders" icon={ListOrdered} label="Live Orders" />
           <NavItem to="/b/requests" icon={BellRing} label="Room Requests" />
-          <NavItem to="/b/batch" icon={Layers} label="Batch View" />
         </nav>
 
         <div className="mt-auto pt-6 border-t border-stone-200 space-y-2">
